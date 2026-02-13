@@ -135,11 +135,15 @@ class Controller {
 
       // 2. Tratamento do Nome
       let customerName = nome || "Cliente LegalDocs";
-      if (customerName.trim().length < 3 || customerName.trim().split(' ').length < 2) {
+      // Remove caracteres especiais e números do nome, mantendo apenas letras e espaços
+      customerName = customerName.replace(/[^a-zA-ZÀ-ÿ\s]/g, '').trim();
+
+      if (customerName.length < 3 || customerName.split(' ').length < 2) {
         if (isSandbox) {
-          console.warn(`[SANDBOX] Nome '${customerName}' muito curto. Ajustando para teste.`);
+          console.warn(`[SANDBOX] Nome '${customerName}' muito curto ou inválido. Ajustando para teste.`);
           customerName = "Cliente Teste Pagbank";
         } else {
+          // Em produção, tenta usar o nome fornecido, mas adiciona sobrenome genérico se necessário para evitar erro 422
           customerName = customerName + " Sobrenome";
         }
       }
@@ -147,6 +151,11 @@ class Controller {
       // 3. Tratamento de Telefone
       let phoneObj = null;
       let cleanPhone = telefone ? telefone.replace(/\D/g, '') : '';
+
+      // Se o telefone vier com 55 (Brasil) no início e tiver 12 ou 13 dígitos
+      if (cleanPhone.startsWith('55') && (cleanPhone.length === 12 || cleanPhone.length === 13)) {
+        cleanPhone = cleanPhone.substring(2);
+      }
 
       if (cleanPhone && cleanPhone.length >= 10) {
         const area = cleanPhone.substring(0, 2);
@@ -158,6 +167,7 @@ class Controller {
           type: "MOBILE"
         };
       } else {
+        // Fallback robusto para Sandbox
         phoneObj = { country: "55", area: "11", number: "999999999", type: "MOBILE" };
       }
 
