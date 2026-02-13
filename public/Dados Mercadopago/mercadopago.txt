@@ -1,0 +1,12 @@
+Cartão: 5031 4332 1540 6351
+Código de segurança: 123	
+Data de vencimento: 11/30
+
+
+status de pagamento : APRO	Descrição: Pagamento aprovado	Documento de identidade : (CPF) 12345678909
+status de pagamento : OTHE	Descrição: Recusado por erro geral	Documento de identidade : (CPF) 12345678909
+status de pagamento : CONT	Descrição: Pagamento pendente
+
+
+
+

@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contratos de Locação e Venda</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/contract_form.css">
+</head>
+
+<body style="height: 100vh; display: flex; flex-direction: column; overflow: hidden;">
+    <!-- Header -->
+    <header class="bg-primary text-white text-center py-3 shadow-sm" style="flex: 0 0 auto;">
+        <div class="container">
+            <h1 class="h4 mb-0 font-weight-bold">Criação de Contratos</h1>
+            <p class="mb-0 small opacity-75">Preencha contratos de locação e venda de forma fácil e rápida.</p>
+        </div>
+    </header>
+
+    <!-- Formulário Wizard -->
+    <main class="container-fluid px-3"
+        style="flex: 1 1 auto; overflow: hidden; padding-top: 10px; padding-bottom: 5px;">
+        <div class="row h-100">
+
+            <div class="card col-12 col-lg-6 scroll-card h-100 border-0 shadow-sm" style="overflow-y: auto;">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h3 class="mb-0 h5">Passo a Passo: Preenchimento do Contrato</h3>
+                </div>
+                <div id="alert-container"></div>
+                <div class="card-body">
+
+                    <div class="form-group">
+                    </div>
+                    <form id="contractForm">
+                        <!--- Etapa1 -->
+                        <div id="step1" class="form-step">
+                            <h4>Quais são as informações do proprietário(a)?</h4>
+                            <div class="form-group">
+                                <label>O proprietário(a) é</label>
+                                <br>
+                                <select class="form-control" name="prop_soc" id="prop_soc"
+                                    onchange="proprietario_pessoa()">
+                                    <option value="" selected disabled>Escolha Tipo Pessoa</option>
+                                    <option value="PF">Pessoa Física (CPF)</option>
+                                    <option value="MEI">Microempreendedor Individual (MEI)</option>
+                                    <option value="PJ">Pessoa Jurídica</option>
+                                </select>
+                                <br>
+                            </div>
+                            <div id="pessoa_soc"></div>
+
+                            <button type="button" class="btn btn-secondary prev-step"
+                                onclick="window.location.href='index.html'">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 2 -->
+                        <div id="step2" class="form-step d-none">
+                            <h4>Informações do Proprietário</h4>
+                            <div class="form-group">
+                                <label for="Estado_Civil">Estado Civil</label>
+                                <br>
+                                <select class="form-control" name="Estado_Civil" id="Estado_Civil"
+                                    onchange="atualizaTextCombos(this.id, 'est-civil-text')">
+                                    <option value="sol">Solteiro(a)</option>
+                                    <option value="ca">Casado(a)</option>
+                                    <option value="vi">Viúvo(a)</option>
+                                    <option value="di">Divorciado(a)</option>
+                                    <option value="sep">Separado(a) Judicialmente</option>
+                                    <option value="uni">União Estável</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="Documento">Selecione um documento de identidade</label>
+                                <br>
+                                <select class="form-control" id="Documento" onchange="updateText('Documento')">
+                                    <option value="rg">Carteira de Identidade (RG)</option>
+                                    <option value="cnh">Carteira Nacional de Habilitação (CNH)</option>
+                                    <option value="iden">Identidade Funcional</option>
+                                    <option value="ctps">Carteira de Trabalho e Previdência Social (CTPS)</option>
+                                    <option value="pass">Passaporte</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="dynamic-text" for="Carteira">Carteira de Identidade (RG)</label>
+                                <br>
+                                <input class="form-control" type="text" name="Carteira" id="Carteira"
+                                    placeholder="Informe o Número" oninput="imputarDoc()" inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label for="Orgao">Órgão Emissor</label>
+                                <br>
+                                <input class="form-control" type="text" name="Orgao" id="Orgao" placeholder="Órgão"
+                                    oninput="imputarOrgao()">
+                            </div>
+
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button id="clickop" type="button" class="btn btn-primary next-step">Próximo</button>
+
+                        </div>
+                        <!-- Etapa 3 -->
+                        <div id="step3" class="form-step d-none">
+                            <h4>Qual o CPF e e-mail do proprietário(a)?</h4>
+                            <div id="pes_txt"></div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 4 -->
+                        <div id="step4" class="form-step d-none">
+                            <h4>Qual endereço do proprietário(a)?</h4>
+                            <div class="form-group">
+                                <div>
+                                    <label for="CEP_proprietario">CEP</label>
+                                    <div class="input-group" style="max-width: 300px;">
+                                        <input class="form-control" type="text" name="CEP_proprietario"
+                                            id="CEP_proprietario" placeholder="14.700-000" maxlength="10">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary"
+                                                onclick="buscarEndereco('CEP_proprietario', 'Rua_proprietario', 'Complemento_proprietario', 'Bairro_proprietario', 'Cidade_proprietario', 'UF_proprietario','proprietario')">
+                                                BUSCAR</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-9">
+                                        <label for="Rua_proprietario">Rua</label>
+                                        <input class="form-control" type="text" name="Rua_proprietario"
+                                            id="Rua_proprietario" placeholder="Ex: Rua Alves Pereira">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="Numero_proprietario">Número</label>
+                                        <input class="form-control" type="number" name="Numero_proprietario"
+                                            id="Numero_proprietario" placeholder="Ex: 1233" oninput="imputarNum()">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="Complemento_proprietario">Complemento</label>
+                                        <input class="form-control" type="text" name="Complemento_proprietario"
+                                            id="Complemento_proprietario" placeholder="Ex: Casa"
+                                            oninput="imputarComp()">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Bairro_proprietario">Bairro</label>
+                                        <input class="form-control" type="text" name="Bairro_proprietario"
+                                            id="Bairro_proprietario" placeholder="Ex: Jd Amanhecer">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-9">
+                                        <label for="Cidade_proprietario">Cidade</label>
+                                        <input class="form-control" type="text" name="Cidade_proprietario"
+                                            id="Cidade_proprietario" placeholder="Ex: São Paulo">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="UF_proprietario">UF</label>
+                                        <input class="form-control" type="text" name="UF_proprietario"
+                                            id="UF_proprietario" placeholder="Ex: SP" maxlength="2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!--- Etapa5 -->
+                        <div id="step5" class="form-step d-none">
+                            <h4>Quais são as informações de quem vai alugar o imóvel?</h4>
+                            <div class="form-group">
+                                <label>O Inquilino é</label>
+                                <br>
+                                <select class="form-control" name="inq_soc" id="inq_soc" onchange="inq_pessoa()">
+                                    <option value="" selected disabled>Escolha Tipo Pessoa</option>
+                                    <option value="PF_Inq">Pessoa Física (CPF)</option>
+                                    <option value="MEI_Inq">Microempreendedor Individual (MEI)</option>
+                                    <option value="PJ_Inq">Pessoa Jurídica</option>
+                                </select>
+                            </div>
+                            <div id="inquilino_pessoa"></div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 6 -->
+                        <div id="step6" class="form-step d-none">
+                            <h4>Informações do Inquilino</h4>
+                            <div class="form-group">
+                                <label for="Est_Ci_Inquilino">Estado Civil</label>
+                                <br>
+                                <select class="form-control" name="Est_Ci_Inquilino" id="Est_Ci_Inquilino"
+                                    onchange="atualizaTextCombos(this.id, 'est-civil-textInq')">
+                                    <option value="sol">Solteiro(a)</option>
+                                    <option value="ca">Casado(a)</option>
+                                    <option value="vi">Viúvo(a)</option>
+                                    <option value="di">Divorciado(a)</option>
+                                    <option value="sep">Separado(a) Judicialmente</option>
+                                    <option value="uni">União Estável</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="Doc_Inquilino">Selecione um documento de identidade</label>
+                                <br>
+                                <select class="form-control" id="Doc_Inquilino" onchange="updateText('Doc_Inquilino')">
+                                    <option value="rg">Carteira de Identidade (RG)</option>
+                                    <option value="cnh">Carteira Nacional de habilitação(CNH)</option>
+                                    <option value="iden">Identidade Funcional</option>
+                                    <option value="ctps">Carteira de Trabalho e previdência social (CTPS)</option>
+                                    <option value="pass">Passaporte</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="Cart_Inquilino" class="dynamic-text1">Carteira de Identidade (RG)</label>
+                                <br>
+                                <input class="form-control" type="text" name="Cart_Inquilino" id="Cart_Inquilino"
+                                    placeholder="Informe o Número" oninput="imputarDocInq()" inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label for="Org_Inquilino">Órgão Emissor</label>
+                                <br>
+                                <input class="form-control" type="text" name="Org_Inquilino" id="Org_Inquilino"
+                                    placeholder="Órgão" oninput="imputarOrgaoInq()">
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 7 -->
+                        <div id="step7" class="form-step d-none">
+                            <h4>Qual o CPF e e-mail do inquilino?</h4>
+                            <div id="inq_txt">
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 8 -->
+                        <div id="step8" class="form-step d-none">
+                            <h4>Informações do Inquilino</h4>
+                            <div class="form-group">
+                                <div>
+                                    <label for="CEP_Inquilino">CEP</label>
+                                    <div class="input-group" style="max-width: 300px;">
+                                        <input class="form-control" type="text" name="CEP_Inquilino" id="CEP_Inquilino"
+                                            placeholder="14.700-000" maxlength="10">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary"
+                                                onclick="buscarEndereco('CEP_Inquilino', 'Rua_Inquilino', 'Complemento_Inquilino', 'Bairro_Inquilino', 'Cidade_Inquilino', 'UF_Inquilino','inquilino')">
+                                                BUSCAR</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-9">
+                                        <label for="Rua_Inquilino">Rua</label>
+                                        <input class="form-control" type="text" name="Rua_Inquilino" id="Rua_Inquilino"
+                                            placeholder="Ex: Rua Alves Pereira">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="Numero_Inquilino">Número</label>
+                                        <input class="form-control" type="number" name="Numero_Inquilino"
+                                            id="Numero_Inquilino" placeholder="Ex: 1233" oninput="imputarNumInq()">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="Complemento_Inquilino">Complemento</label>
+                                        <input class="form-control" type="text" name="Complemento_inquilino"
+                                            id="Compl_Inquilino" placeholder="Ex: Casa" oninput="imputarCompInq()">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Bairro_Inquilino">Bairro</label>
+                                        <input class="form-control" type="text" name="Bairro_Inquilino"
+                                            id="Bairro_Inquilino" placeholder="Ex: Jd Amanhecer">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-9">
+                                        <label for="Cidade_Inquilino">Cidade</label>
+                                        <input class="form-control" type="text" name="Cidade_Inquilino"
+                                            id="Cidade_Inquilino" placeholder="Ex: São Paulo">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="UF_Inquilino">UF</label>
+                                        <input class="form-control" type="text" name="UF_Inquilino" id="UF_Inquilino"
+                                            placeholder="Ex: SP" maxlength="2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 9 -->
+                        <div id="step9" class="form-step d-none">
+
+                            <h4>Qual endereço do imóvel que está sendo alugado?</h4>
+                            <div class="form-group">
+                                <div>
+                                    <label for="CEP_Imovel">CEP</label>
+                                    <div class="input-group" style="max-width: 300px;">
+                                        <input class="form-control" type="text" name="CEP_Imovel" id="CEP_Imovel"
+                                            placeholder="14.700-000" maxlength="10">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary"
+                                                onclick="buscarEndereco('CEP_Imovel','Rua_Imovel','Compl_Imovel','Bairro_Imovel','Cidade_Imovel','UF_Imovel','Imovel')">
+                                                BUSCAR</button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-9">
+                                        <label for="Rua_Imovel">Rua</label>
+                                        <input class="form-control" type="text" name="Rua_Imovel" id="Rua_Imovel"
+                                            placeholder="Ex: Rua Alves Pereira">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="Numero_Imovel">Número</label>
+                                        <input class="form-control" type="number" name="Numero_Imovel"
+                                            id="Numero_Imovel" placeholder="Ex: 1233" oninput="imputarNumImovel()">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="Compl_Imovel">Complemento</label>
+                                        <input class="form-control" type="text" name="Compl_Imovel" id="Compl_Imovel"
+                                            placeholder="Ex: Casa" oninput="imputarCompImovel()">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Bairro_Imovel">Bairro</label>
+                                        <input class="form-control" type="text" name="Bairro_Imovel" id="Bairro_Imovel"
+                                            placeholder="Ex: Jd Amanhecer" oninput="imputarBairroImovel()">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-9">
+                                        <label for="Cidade_Imovel">Cidade</label>
+                                        <input class="form-control" type="text" name="Cidade_Imovel" id="Cidade_Imovel"
+                                            placeholder="Ex: São Paulo">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="UF_Imovel">UF</label>
+                                        <input class="form-control" type="text" name="UF_Imovel" id="UF_Imovel"
+                                            placeholder="Ex: SP" maxlength="2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+
+                        <!-- Etapa 10 -->
+                        <div id="step10" class="form-step d-none">
+                            <h4>Descrição do Imóvel( Tamanho, cômodos, etc. )</h4>
+                            <div class="form-group">
+                                <div style="grid-column: 1 / -1;">
+                                    <label for="des_Destalhes">Informações</label>
+                                    <textarea class="form-control" id="des_Destalhes" style="height: 500px;"
+                                        placeholder="Ex: Apartamento mobiliado, situado no 7º andar, com 200 (duzentos) m2, com: 
+
+                                    - 2 (dois) quartos
+                                    - 1 (uma) suíte
+                                    - 2 (dois) banheiros
+                                    - Cozinha
+                                    - Sala de estar"></textarea>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+
+                        <!-- Etapa 11 -->
+                        <div id="step11" class="form-step d-none">
+                            <h4>Matrícula do imóvel</h4>
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="matricula">Incluir a Matrícula do imóvel?</label>
+                                        <select class="form-control" name="matricula" id="matricula"
+                                            onchange="Matricula_Imovel()">
+                                            <option value="NM">Não</option>
+                                            <option value="SM">Sim</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="matricula-content"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 12-->
+                        <div id="step12" class="form-step d-none">
+                            <h4>Informações do Proprietário</h4>
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="prazo">Esse contrato será por prazo</label>
+                                        <select class="form-control" name="prazo" id="prazo" onchange="contratoprazo()">
+                                            <option value="">Selecione o prazo</option>
+                                            <option value="PD">Prazo Determinado</option>
+                                            <option value="PI">Prazo Indeterminado</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="prazo-content"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 13 -->
+                        <div id="step13" class="form-step d-none">
+                            <h4>Informações do Aluguel</h4>
+                            <div class="form-group">
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="valor"
+                                            style="min-height: 48px; display: flex; align-items: end;">Qual
+                                            valor do aluguel?</label>
+                                        <input class="form-control" type="number" name="valor" id="valor"
+                                            placeholder="R$" oninput="val_Aluguel()">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="dia_aluguel"
+                                            style="min-height: 48px; display: flex; align-items: end;">Em qual dia
+                                            deverá
+                                            ser pago o aluguel?</label>
+                                        <input class="form-control" type="number" name="dia_aluguel" id="dia_aluguel"
+                                            placeholder="Ex: 10" oninput="diaPagamentoAluguel()">
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="pagamento">Meio de pagamento do aluguel</label>
+                                        <select class="form-control" name="pagamento" id="pagamento"
+                                            onchange="meioPagamento()">
+                                            <option value="Dim">Dinheiro(espécie)</option>
+                                            <option value="PI">Pix</option>
+                                            <option value="Che">Cheque</option>
+                                            <option value="Trans">Transferência Bancária</option>
+                                            <option value="Bol">Boleto Bancário</option>
+                                            <option value="Outro">Outro</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div id="meio_pagamento"></div>
+                                    </div>
+                                </div>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="reajuste">Qual será o índice de reajuste?</label>
+                                        <select class="form-control" name="reajuste" id="reajuste"
+                                            onchange="indiceReajuste()">
+                                            <option value="INCC">INCC</option>
+                                            <option value="IGPM">IGP-M</option>
+                                            <option value="IPCA">IPCA</option>
+                                            <option value="IVAR">IVAR</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="multa">&nbsp;</label>
+                                        <input class="form-control" type="text" name="multa" id="multa"
+                                            placeholder="EX: 10%" oninput="multaAtraso()">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 14 -->
+                        <div id="step14" class="form-step d-none">
+                            <h4>Informações sobre a garantia do contrato</h4>
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <label for="garantia">Qual a garantia?</label>
+                                        <select class="form-control" name="garantia" id="garantia"
+                                            onchange="garantia_cont(),Fiador_Utilizado()">
+                                            <option value="Outro">Outra/Sem Garantia</option>
+                                            <option value="Caucao">Caução</option>
+                                            <option value="Fiador">Fiador</option>
+                                            <option value="Seguro">Seguro Fiança</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6" id="garantia-content"></div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 15 -->
+                        <div id="step15" class="form-step d-none">
+                            <h4>Quais são as informações do fiador?</h4>
+                            <div class="form-group">
+                                <label for="Nome_Fiador">Nome Completo</label>
+                                <br>
+                                <input class="form-control" type="text" id="Nome_Fiador" name="Nome_Fiador"
+                                    placeholder="EX: João Silva" oninput="Imputar_Fiador()">
+                            </div>
+                            <div class="form-group">
+                                <label for="Nacionalidade_Fiador">Nacionalidade</label>
+                                <br>
+                                <input class="form-control" type="text" id="Nacionalidade_Fiador"
+                                    name="Nacionalidade_Fiador" placeholder="EX: Brasileiro" oninput="Nac_Fiador()">
+                            </div>
+                            <div class="form-group">
+                                <label for="Profissao_Fiador">Profissão</label>
+                                <br>
+                                <input class="form-control" type="text" id="Profissao_Fiador" name="Profissao_Fiador"
+                                    placeholder="Ex: Gerente" oninput="Prof_Fiador()">
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 16 -->
+                        <div id="step16" class="form-step d-none">
+                            <h4>Quais os documentos do fiador?</h4>
+                            <div class="form-group">
+                                <label for="Est_Ci_Fiador">Estado Civil</label>
+                                <br>
+                                <select class="form-control" name="Est_Ci_Fiador" id="Est_Ci_Fiador"
+                                    onchange="atualizaTextCombos(this.id, 'fiador_text')">
+                                    <option value="sol">Solteiro(a)</option>
+                                    <option value="ca">Casado(a)</option>
+                                    <option value="vi">Viúvo(a)</option>
+                                    <option value="di">Divorciado(a)</option>
+                                    <option value="sep">Separado(a) Judicialmente</option>
+                                    <option value="uni">União Estável</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="Doc_Fiador">Selecione um documento de identidade</label>
+                                <br>
+                                <select class="form-control" id="Doc_Fiador" onchange="updateText('Doc_Fiador')">
+                                    <option value="rg">Carteira de Identidade (RG)</option>
+                                    <option value="cnh">Carteira Nacional de Habilitação (CNH)</option>
+                                    <option value="iden">Identidade Funcional</option>
+                                    <option value="ctps">Carteira de Trabalho e Previdência Social (CTPS)</option>
+                                    <option value="pass">Passaporte</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="dynamic-text2" for="Carteira_Fi">Carteira de Identidade (RG)</label>
+                                <br>
+                                <input class="form-control" type="text" name="Carteira_Fi" id="Carteira_Fi"
+                                    placeholder="Informe o Número" oninput="imputarDocFiador()">
+                            </div>
+                            <div class="form-group">
+                                <label for="Orgao_Fi">Órgão Emissor</label>
+                                <br>
+                                <input class="form-control" type="text" name="Orgao_Fi" id="Orgao_Fi"
+                                    placeholder="Órgão" oninput="imputarOrgaoFiador()">
+                            </div>
+
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button id="clickop" type="button" class="btn btn-primary next-step">Próximo</button>
+
+                        </div>
+                        <!-- Etapa 17 -->
+                        <div id="step17" class="form-step d-none">
+                            <h4>Qual o CPF e e-mail do fiador?</h4>
+                            <div class="form-group">
+                                <label for="CPF_Fiador">CPF</label>
+                                <br>
+                                <input class="form-control" type="text" id="CPF_Fiador" name="CPF_Fiador"
+                                    placeholder="Ex 555.555.555-55" oninput="imputarCPF_Fi()" inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label for="email_Fiador">Email</label>
+                                <br>
+                                <input class="form-control" type="email" id="email_Fiador" name="email_Fiador"
+                                    placeholder="Ex: exemplo@gmail.com" oninput="imputarEmailFi()">
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 18 -->
+                        <div id="step18" class="form-step d-none">
+                            <h4>Qual endereço do fiador(a)?</h4>
+                            <div class="form-group">
+                                <div>
+                                    <label for="CEP_Fi">CEP</label>
+                                    <div class="input-group" style="max-width: 300px;">
+                                        <input class="form-control" type="text" name="CEP_Fi" id="CEP_Fi"
+                                            placeholder="14.700-000" maxlength="10">
+                                        <div class="input-group-append">
+                                            <button type="button" class="btn btn-primary"
+                                                onclick="buscarEndereco('CEP_Fi','Rua_Fi','Complemento_Fi','Bairro_Fi','Cidade_Fi','UF_Fi','Fiador')">
+                                                BUSCAR</button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-9">
+                                        <label for="Rua_Fi">Rua</label>
+                                        <input class="form-control" type="text" name="Rua_Fi" id="Rua_Fi"
+                                            placeholder="Ex: Rua Alves Pereira">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="Numero_Fi">Número</label>
+                                        <input class="form-control" type="number" name="Numero_Fi" id="Numero_Fi"
+                                            placeholder="Ex: 1233" oninput="imputarNumFi()">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <label for="Complemento_Fi">Complemento</label>
+                                        <input class="form-control" type="text" name="Complemento_Fi"
+                                            id="Complemento_Fi" placeholder="Ex: Casa" oninput="imputarCompFi()">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Bairro_Fi">Bairro</label>
+                                        <input class="form-control" type="text" name="Bairro_Fi" id="Bairro_Fi"
+                                            placeholder="Ex: Jd Amanhecer" oninput="imputarBairroFi()">
+                                    </div>
+                                </div>
+
+                                <div class="row mt-3">
+                                    <div class="col-md-9">
+                                        <label for="Cidade_Fi">Cidade</label>
+                                        <input class="form-control" type="text" name="Cidade_Fi" id="Cidade_Fi"
+                                            placeholder="Ex: São Paulo">
+                                    </div>
+                                    <div class="col-md-3">
+                                        <label for="UF_Fi">UF</label>
+                                        <input class="form-control" type="text" name="UF_Fi" id="UF_Fi"
+                                            placeholder="Ex: SP" maxlength="2">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+
+
+                        <!-- Etapa 19 -->
+                        <div id="step19" class="form-step d-none">
+                            <h4>Melhorias e construções</h4>
+                            <div class="form-group">
+                                <label for="obras">Quem será responsável por obras essenciais?</label>
+                                <br>
+                                <select class="form-control" name="obras" id="obras" onchange="obras_Essen()">
+                                    <option value="Prop">Proprietário(a)</option>
+                                    <option value="inquilino">Inquilino (Quem aluga o imóvel)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="nobras">Quem será responsável por obras não essenciais?</label>
+                                <br>
+                                <select class="form-control" name="nobras" id="nobras" onchange="obras_nao()">
+                                    <option value="Inquilino">Inquilino (Quem aluga o imóvel)</option>
+                                    <option value="Prop">Proprietário(a)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 20 -->
+                        <div id="step20" class="form-step d-none">
+                            <h4>IPTU e Seguro contra incêndio</h4>
+                            <div class="form-group">
+                                <label for="IPTU">Quem será responsável pelo pagamento do IPTU?</label>
+                                <br>
+                                <select class="form-control" name="IPTU" id="IPTU" onchange="iptu_pag()">
+                                    <option value="Inquilino">Inquilino (Quem aluga o imóvel)</option>
+                                    <option value="Prop">Proprietário(a)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="inc">Quem será responsável pelo pagamento do Seguro contra incêndio?</label>
+                                <br>
+                                <select class="form-control" name="inc" id="inc" onchange="pag_Seguro()">
+                                    <option value="Ninguem">Ninguém</option>
+                                    <option value="Prop">Proprietário(a)</option>
+                                    <option value="Inquilino">Inquilino (Quem aluga o imóvel)</option>
+                                </select>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 21 -->
+                        <div id="step21" class="form-step d-none">
+                            <h4>Multa de descumprimento e rompimento</h4>
+                            <div class="form-group">
+                                <div>
+                                    <label for="clausula">Haverá multa caso umas das partes descumpra alguma
+                                        cláusula?</label>
+                                    <br>
+                                    <select class="form-control" name="clausula" id="clausula"
+                                        onchange="multa_clausula()">
+                                        <option value="NC">Não</option>
+                                        <option value="SC">Sim</option>
+                                    </select>
+                                </div>
+                                <div id="clausula-content"></div>
+                                <div>
+                                    <label for="multa_prazo">Haverá multa em caso de rompimento do contrato antes do
+                                        prazo</label>
+                                    <br>
+                                    <select class="form-control" name="multa_prazo" id="multa_prazo"
+                                        onchange="prazo_multa()">
+                                        <option value="NP">Não</option>
+                                        <option value="SP">Sim</option>
+                                    </select>
+                                </div>
+                                <div id="multa_prazo-content"></div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 22 -->
+                        <div id="step22" class="form-step d-none">
+                            <h4>Deseja incluir uma cláusula ou obrigação ao proprietário(a)?</h4>
+                            <div class="form-group">
+                                <div class="form-floating">
+                                    <label for="floatingTextarea">Especifique o que deseja adicionar referente ao
+                                        proprietário(a).</label>
+                                    <br>
+                                    <textarea id="text-clausula" class="form-control" style="height: 500px;"
+                                        data-optional="true"></textarea>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 23 -->
+                        <div id="step23" class="form-step d-none">
+                            <h4>Deseja incluir uma cláusula ou obrigação ao Inquilino(a)?</h4>
+                            <div class="form-group">
+                                <div class="form-floating">
+                                    <label for="floatingTextarea">Especifique o que deseja adicionar referente ao
+                                        Inquilino(a).</label>
+                                    <br>
+                                    <textarea class="form-control" id="text-inq_clausula" style="height: 500px;"
+                                        data-optional="true"></textarea>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 24 -->
+                        <div id="step24" class="form-step d-none">
+                            <h4>Em qual local e data será assinado esse contrato?</h4>
+                            <div class="form-group">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <label for="Cidade">Cidade</label>
+                                        <input class="form-control" type="text" name="cidade" id="cidade"
+                                            placeholder="Ex: São Paulo" oninput="inc_cidade()">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="estado_uf">Estado (UF)</label>
+                                        <input class="form-control" type="text" name="estado_uf" id="estado_uf"
+                                            placeholder="Ex: SP" oninput="inc_UF()">
+                                    </div>
+                                </div>
+                                <br>
+                                <div class="row">
+                                    <div class="col-md-3">
+                                        <label for="dia">Dia</label>
+                                        <input class="form-control" type="text" maxlength="2" name="dia" id="dia"
+                                            placeholder="Ex: 12" oninput="inc_dia()">
+                                    </div>
+
+                                    <div class="col-md-6">
+                                        <label for="meses">Mês por escrito</label>
+                                        <input class="form-control" type="text" name="meses" id="meses"
+                                            placeholder="Ex:Janeiro" oninput="inc_mes()">
+                                    </div>
+
+                                    <div class="col-md-3">
+                                        <label for="ano_ass">Ano</label>
+                                        <input class="form-control" type="text" maxlength="4" name="ano_ass"
+                                            id="ano_ass" placeholder="Ex:2025" oninput="inc_ano()">
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 25 -->
+                        <div id="step25" class="form-step d-none">
+                            <h4>Informações das testemunhas (Opcional)</h4>
+                            <div class="form-group">
+                                <label for="testemunha1">Nome da 1º Testemunha</label>
+                                <br>
+                                <input class="form-control" type="text" name="testemunha1" id="testemunha1"
+                                    placeholder="Ex: Marcos da Silva" data-optional="true">
+                            </div>
+                            <div class="form-group">
+                                <label for="cpf_Tes1">CPF da 1º Testemunha</label>
+                                <br>
+                                <input class="form-control" type="text" name="cpf_Tes1" id="cpf_Tes1"
+                                    placeholder="Ex: 555.555.555-55" data-optional="true" inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label for="testemunha2">Nome da 2º Testemunha</label>
+                                <br>
+                                <input class="form-control" type="text" name="testemunha2" id="testemunha2"
+                                    placeholder="Ex: Marcos da Silva" data-optional="true">
+                            </div>
+                            <div class="form-group">
+                                <label for="cpf_Tes2">CPF da 2º Testemunha</label>
+                                <br>
+                                <input class="form-control" type="text" name="cpf_Tes2" id="cpf_Tes2"
+                                    placeholder="Ex: 555.555.555-55" data-optional="true" inputmode="numeric">
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-primary next-step">Próximo</button>
+                        </div>
+                        <!-- Etapa 26 -->
+                        <div id="step26" class="form-step d-none">
+                            <h4>Para qual e-mail devemos enviar seu Contrato de Locação Residencial?</h4>
+                            <div class="form-group">
+                                <label for="email_contrato">E-mail para receber o contrato</label>
+                                <br>
+                                <input class="form-control" type="email" name="email_contrato" id="email_contrato"
+                                    placeholder="Ex: exemplo@gmail.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="email_conf">Confirmar e-mail</label>
+                                <br>
+                                <input class="form-control" type="email" name="email_conf" id="email_conf"
+                                    placeholder="Ex: exemplo@gmail.com">
+                            </div>
+                            <div class="form-group">
+                                <label for="CPF">CPF</label>
+                                <br>
+                                <input class="form-control" type="text" name="cpf" id="cpf" placeholder="555.555.555-55"
+                                    inputmode="numeric">
+                            </div>
+                            <div class="form-group">
+                                <label for="WhatsApp">WhatsApp (opcional)</label>
+                                <br>
+                                <input class="form-control" type="tel" name="WhatsApp" id="WhatsApp"
+                                    placeholder="Ex: (00) 0000-0000" data-optional="true">
+                            </div>
+
+                            <div class="form-group mt-3 text-center">
+                                <label class="font-weight-bold">Escolha a forma de pagamento:</label>
+                                <div class="d-flex justify-content-center">
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="pay_mercadopago" name="payment_method"
+                                            class="custom-control-input" value="mercadopago" checked
+                                            onchange="togglePagSeguroField()">
+                                        <label class="custom-control-label" for="pay_mercadopago">Mercado Pago</label>
+                                    </div>
+                                    <div class="custom-control custom-radio custom-control-inline">
+                                        <input type="radio" id="pay_pagseguro" name="payment_method"
+                                            class="custom-control-input" value="pagseguro"
+                                            onchange="togglePagSeguroField()">
+                                        <label class="custom-control-label" for="pay_pagseguro">PagSeguro</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="pagseguro-info" class="form-group d-none">
+                                <label for="pagador_nome">Nome Completo (para pagamento)</label>
+                                <br>
+                                <input class="form-control" type="text" name="pagador_nome" id="pagador_nome"
+                                    placeholder="Nome como no cartão/documento">
+                            </div>
+                            <button type="button" class="btn btn-secondary prev-step">Voltar</button>
+                            <button type="button" class="btn btn-success" onclick="concluir()">Concluir</button>
+                        </div>
+                    </form>
+                    <br>
+                    <div>
+                        <p id="downloads"></p>
+                        <div id="link-pagamento"></div>
+                        <div id="link-pagamento"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="card col-12 col-lg-6 bg-waring scroll-card h-100 border-0 shadow-sm" style="overflow-y: auto;">
+                <div id="conteudoContrato"></div>
+            </div>
+        </div>
+    </main>
+    <!-- Footer -->
+    <footer class="bg-light text-center py-2 border-top" style="flex: 0 0 auto;">
+        <p class="mb-0 small text-muted">&copy; <span id="currentYear"></span> Contratos Online. Todos os direitos
+            reservados.</p>
+    </footer>
+
+    <!-- Bootstrap JS and Dependencies -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/script.js"></script>
+    <script src="js/input_masks.js"></script>
+    <script src="js/contract_logic.js"></script>
+    <script>
+        // Carrega dinamicamente o contrato
+        document.addEventListener('DOMContentLoaded', () => {
+            const conteudoContrato = document.getElementById('conteudoContrato');
+            fetch('contrato/contrato_PF.html?v=' + Date.now())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`Erro ao carregar o contrato: ${response.status}`);
+                    }
+                    return response.text();
+                })
+                .then(html => {
+                    conteudoContrato.innerHTML = html;
+                })
+                .catch(error => {
+                    conteudoContrato.innerHTML = `<p>Erro ao carregar o contrato: ${error.message}</p>`;
+                });
+        });
+    </script>
+
+</body>
+
+</html>

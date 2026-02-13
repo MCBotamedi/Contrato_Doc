@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Recuperar Contrato</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/contract_form.css">
+</head>
+
+<body style="height: 100vh; display: flex; flex-direction: column; overflow: hidden;">
+  <!-- Header -->
+  <header class="bg-primary text-white text-center py-3 shadow-sm" style="flex: 0 0 auto;">
+    <div class="container">
+      <h1 class="h4 mb-0 font-weight-bold">Recuperar Contrato</h1>
+      <p class="mb-0 small opacity-75">Faça o download do seu contrato preenchido.</p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container-fluid px-3" style="flex: 1 1 auto; overflow: hidden; padding-top: 10px; padding-bottom: 5px;">
+    <div class="row h-100">
+
+      <!-- Left Side: Controls/Status -->
+      <div class="card col-12 col-lg-6 scroll-card h-100 border-0 shadow-sm" style="overflow-y: auto;">
+        <div class="card-header bg-secondary text-white py-2">
+          <h3 class="mb-0 h5">Dados do Contrato</h3>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label for="idContrato">ID do Contrato:</label>
+            <input type="text" id="idContrato" class="form-control" placeholder="Informe o ID do Contrato" />
+          </div>
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="email" id="email" class="form-control" placeholder="Informe seu email" />
+          </div>
+
+          <div id="mensagem" class="mt-3"></div>
+
+          <button class="btn btn-success d-block mx-auto mt-4" style="width: 200px;" onclick="recuperarContrato()">
+            Consultar
+          </button>
+
+          <button id="btnDownload" type="button" class="btn btn-primary mx-auto mt-3"
+            style="display: none; width: 200px;" onclick="baixarPDF()">
+            Baixar Contrato
+          </button>
+
+          <button type="button" class="btn btn-secondary d-block mx-auto mt-3" style="width: 200px;"
+            onclick="window.location.href='index.html'">
+            Voltar para Início
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Side: Contract Preview -->
+      <div class="card col-12 col-lg-6 bg-waring scroll-card h-100 border-0 shadow-sm" style="overflow-y: auto;">
+        <div id="contratoContainer" style="background-color: white; padding: 20px; min-height: 100%;">
+          <p class="text-center text-muted">A visualização do contrato aparecerá aqui após a consulta.</p>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="bg-light text-center py-2 border-top" style="flex: 0 0 auto;">
+    <p class="mb-0 small text-muted">&copy; <span id="currentYear"></span> Contratos Online. Todos os direitos
+      reservados.</p>
+  </footer>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      document.getElementById('currentYear').textContent = new Date().getFullYear();
+    });
+
+    // Função simplificada para buscar contrato
+    async function recuperarContrato() {
+      const id = document.getElementById("idContrato").value;
+      const email = document.getElementById("email").value;
+
+      if (!id || !email) {
+        mostrarMensagem("Preencha todos os campos", "danger");
+        return;
+      }
+
+      mostrarMensagem("Buscando contrato...", "info");
+      document.getElementById("btnDownload").style.display = "none";
+      document.getElementById("contratoContainer").innerHTML = '<p class="text-center text-muted">Carregando...</p>';
+
+      try {
+        // Simulação de delay para feedback visual (opcional)
+        // await new Promise(r => setTimeout(r, 500)); 
+
+        const response = await fetch('/consultar/contrato', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id, email })
+        });
+
+        if (!response.ok) throw new Error("Erro ao buscar contrato");
+
+        const data = await response.json();
+
+        // Ajuste para lidar com array ou objeto único
+        const contrato = Array.isArray(data) ? data[0] : data;
+
+        if (!contrato) throw new Error("Contrato não encontrado");
+
+        // Validação de status - ajuste conforme os status reais do seu sistema
+        const statusValidos = ["approved", "active", "completed", "paid"]; // Adicionei 'paid' por precaução
+        if (contrato.status && !statusValidos.includes(contrato.status) && contrato.status !== 'approved') {
+          // Lógica flexível para status, assumindo que se retornou conteúdo é válido, mas alertando se status for estranho
+          // Se o backend só retorna contratos válidos, isso pode ser simplificado
+        }
+
+        // Extração do conteúdo
+        const conteudo = contrato.conteudocontrato || contrato.conteudoContrato;
+
+        if (!conteudo) throw new Error("Contrato encontrado, mas sem conteúdo disponível.");
+
+        // Tentativa de parse se for JSON, senão usa como string HTML direta
+        try {
+          const conteudoFinal = JSON.parse(conteudo);
+          document.getElementById("contratoContainer").innerHTML =
+            typeof conteudoFinal === "object"
+              ? formatarHTML(conteudoFinal)
+              : conteudoFinal;
+        } catch {
+          // Se der erro no parse, assume que já é HTML string
+          document.getElementById("contratoContainer").innerHTML = conteudo;
+        }
+
+        document.getElementById("btnDownload").style.display = "block";
+        mostrarMensagem("Contrato encontrado com sucesso!", "success");
+
+      } catch (error) {
+        console.error(error);
+        mostrarMensagem(error.message || "Erro desconhecido ao buscar contrato.", "danger");
+        document.getElementById("contratoContainer").innerHTML = `<div class="alert alert-danger">${error.message}</div>`;
+      }
+    }
+
+    // Função simplificada para formatar HTML de objeto JSON (caso legado)
+    function formatarHTML(obj) {
+      return `<div class="contrato-html">${Object.entries(obj)
+        .map(([k, v]) => `<p><strong>${k}:</strong> ${v}</p>`)
+        .join("")}</div>`;
+    }
+
+    // Função para mostrar mensagens
+    function mostrarMensagem(msg, tipo) {
+      const msgDiv = document.getElementById("mensagem");
+      msgDiv.innerHTML = `<div class="alert alert-${tipo} alert-dismissible fade show" role="alert">
+                                    ${msg}
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                                </div>`;
+    }
+
+    // Função para baixar o PDF
+    function baixarPDF() {
+      const elementoOriginal = document.getElementById("contratoContainer");
+      if (!elementoOriginal) return;
+
+      // Feedback visual
+      const btn = document.getElementById("btnDownload");
+      const btnTextoOriginal = btn.innerHTML;
+      btn.innerHTML = "Gerando PDF...";
+      btn.disabled = true;
+
+      // Cria um container temporário para o PDF (simulando A4)
+      const containerTemp = document.createElement('div');
+      containerTemp.style.width = '800px'; // Largura aproximada A4
+      containerTemp.style.fontSize = '12pt';
+      containerTemp.style.position = 'absolute';
+      containerTemp.style.left = '-9999px';
+      containerTemp.style.top = '0';
+
+      // Clone o conteúdo para não afetar a visualização original
+      const conteudoClone = elementoOriginal.cloneNode(true);
+
+      // Ajustes de estilo para o PDF no clone
+      conteudoClone.style.width = '100%';
+      conteudoClone.style.margin = '0';
+      conteudoClone.style.padding = '20px'; // Margem interna
+
+      // Adiciona regras de quebra de página
+      const style = document.createElement('style');
+      style.innerHTML = `
+        .header-clausula {
+          page-break-after: avoid !important;
+          page-break-inside: avoid !important;
+          margin-bottom: 0px !important; 
+          padding-bottom: 0px !important;
+        }
+        
+        /* Evita que parágrafos sejam quebrados no meio */
+        p {
+          page-break-inside: avoid;
+          margin-bottom: 10px;
+        }
+
+        /* Garante que títulos e texto fiquem juntos */
+        h1, h2, h3, h4, h5, h6 {
+          page-break-after: avoid;
+           page-break-inside: avoid;
+        }
+
+        /* Ajuste fino para evitar grandes espaços em branco */
+        .page-break {
+          page-break-before: always;
+        }
+      `;
+      conteudoClone.appendChild(style);
+
+      // Script para identificar cabeçalhos de cláusulas e aplicar classe
+      // Isso ajuda a manter o título junto com o texto seguinte
+      const paragraphs = conteudoClone.querySelectorAll('p');
+      paragraphs.forEach(p => {
+        if (p.textContent.trim().startsWith('Cláusula') || p.querySelector('strong')) {
+          p.classList.add('header-clausula');
+        }
+      });
+
+      containerTemp.appendChild(conteudoClone);
+      document.body.appendChild(containerTemp);
+
+      var opt = {
+        margin: 15, // Aumenta margem para evitar cortes nas bordas
+        filename: "contrato_recuperado.pdf",
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: {
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          letterRendering: true, // Melhora renderização de fonte
+          scrollX: 0,
+          scrollY: 0,
+        },
+        jsPDF: {
+          unit: "mm",
+          format: "a4",
+          orientation: "portrait",
+        },
+        pagebreak: { mode: ['css', 'legacy'] } // Remove avoid-all para dar mais controle via CSS
+      };
+
+      // Pequeno delay para garantir renderização no DOM
+      setTimeout(() => {
+        html2pdf()
+          .set(opt)
+          .from(conteudoClone)
+          .save()
+          .then(() => {
+            btn.innerHTML = btnTextoOriginal;
+            btn.disabled = false;
+            // Remove o container temporário
+            document.body.removeChild(containerTemp);
+          })
+          .catch((err) => {
+            console.error("Erro ao gerar PDF:", err);
+            mostrarMensagem("Erro ao gerar o PDF. Tente novamente.", "danger");
+            btn.innerHTML = btnTextoOriginal;
+            btn.disabled = false;
+            // Remove o container temporário mesmo em erro
+            if (document.body.contains(containerTemp)) {
+              document.body.removeChild(containerTemp);
+            }
+          });
+      }, 500);
+    }
+  </script>
+
+  <!-- Dependências JS -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download do Contrato</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/contract_form.css">
+</head>
+
+<body style="height: 100vh; display: flex; flex-direction: column; overflow: hidden;">
+    <!-- Header -->
+    <header class="bg-primary text-white text-center py-3 shadow-sm" style="flex: 0 0 auto;">
+        <div class="container">
+            <h1 class="h4 mb-0 font-weight-bold">Download do Contrato</h1>
+            <p class="mb-0 small opacity-75">Faça o download do seu contrato preenchido.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container-fluid px-3"
+        style="flex: 1 1 auto; overflow: hidden; padding-top: 10px; padding-bottom: 5px;">
+        <div class="row h-100">
+
+            <!-- Left Side: Controls/Status -->
+            <div class="card col-12 col-lg-6 scroll-card h-100 border-0 shadow-sm" style="overflow-y: auto;">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h3 class="mb-0 h5">Status do Contrato</h3>
+                </div>
+                <div class="card-body">
+                    <div id="statusMessage">
+                        <p>Verificando status do pagamento...</p>
+                    </div>
+
+                    <button id="btnDownload" type="button" class="btn btn-primary d-block mx-auto"
+                        style="margin-top: 15px; width: 200px;">
+                        Download do Contrato
+                    </button>
+
+                    <button type="button" class="btn btn-secondary prev-step d-block mx-auto"
+                        style="margin-top: 15px; width: 200px;" onclick="window.location.href='index.html'">
+                        Voltar para Início
+                    </button>
+                    <!-- Hidden div for script compatibility if it tries to write here - maintaining just in case, but actual preview is on right -->
+                </div>
+            </div>
+
+            <!-- Right Side: Contract Preview -->
+            <div class="card col-12 col-lg-6 bg-waring scroll-card h-100 border-0 shadow-sm" style="overflow-y: auto;">
+                <div id="contratoParaDownload" style="background-color: white; padding: 20px; min-height: 100%;">
+                    <p class="text-center text-muted">Carregando contrato...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-2 border-top" style="flex: 0 0 auto;">
+        <p class="mb-0 small text-muted">&copy; <span id="currentYear"></span> Contratos Online. Todos os direitos
+            reservados.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            const parametrosUrl = new URLSearchParams(window.location.search)
+            const externalReference = parametrosUrl.get('external_reference');
+            const paymentId = parametrosUrl.get('payment_id');
+            const status = parametrosUrl.get('status');
+
+            if (externalReference) {
+                atualizarContrato(externalReference, paymentId, status)
+            } else {
+                console.warn('Id de referência não encontrado na URL.');
+            }
+
+            recuperarContrato(status);
+        });
+
+        function recuperarContrato(statusPagamento) {
+            const contratoSalvo = localStorage.getItem('contratoPreenchido');
+
+            // Simulação de erro no pagamento (altere conforme necessário)
+            const pagamentoFalhou = statusPagamento && statusPagamento !== 'approved';
+
+            if (pagamentoFalhou) {
+                localStorage.removeItem('contratoPreenchido'); // Remove o contrato se o pagamento falhou
+
+                // Exibe a mensagem de alerta com imagens
+                document.getElementById('contratoParaDownload').innerHTML = `
+                    <div style="text-align: center; padding: 20px; border-radius: 10px;">
+                        <img src="img/cartao.jpg" alt="Cartão de Pagamento" style="width: 100px; display: block; margin: 0 auto;">
+                        <p>Nenhum contrato encontrado.</p>
+                        <br>
+                        <img src="img/alerta.png" alt="Atenção" style="width: 50px; display: block; margin: 0 auto;">
+                        <h3>Favor verificar pagamento.</h3>
+                    </div>
+                `;
+
+                // Oculta o botão de download
+                document.getElementById('btnDownload').style.display = 'none';
+            } else if (contratoSalvo) {
+                document.getElementById('contratoParaDownload').innerHTML = contratoSalvo;
+            } else {
+                document.getElementById('contratoParaDownload').innerHTML = "<p>Nenhum contrato disponível.</p>";
+            }
+        }
+
+        async function atualizarContrato(idReferencia, idPagamento, status) {
+            const dados = { id: idReferencia, status, idPagamento }
+
+            try {
+                const response = await fetch('/atualizar', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const data = await response.json();
+
+                if (data.id) {
+                    console.log('ID CONTRATO ATUALIZADO: ', data.id)
+                } else {
+                    console.log('CONTRATO ATUALIZADO: ', data)
+                }
+            } catch (error) {
+                console.error("Erro ao gerar pagamento:", error);
+            }
+        }
+    </script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+
+</html>

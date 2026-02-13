@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download do Contrato</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@300;400;500;600&family=Outfit:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/contract_form.css">
+</head>
+
+<body style="height: 100vh; display: flex; flex-direction: column; overflow: hidden;">
+    <!-- Header -->
+    <header class="bg-primary text-white text-center py-3 shadow-sm" style="flex: 0 0 auto;">
+        <div class="container">
+            <h1 class="h4 mb-0 font-weight-bold">Download do Contrato</h1>
+            <p class="mb-0 small opacity-75">Faça o download do seu contrato preenchido.</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container-fluid px-3"
+        style="flex: 1 1 auto; overflow: hidden; padding-top: 10px; padding-bottom: 5px;">
+        <div class="row h-100">
+
+            <!-- Left Side: Controls -->
+            <div class="card col-12 col-lg-6 scroll-card h-100 border-0 shadow-sm" style="overflow-y: auto;">
+                <div class="card-header bg-secondary text-white py-2">
+                    <h3 class="mb-0 h5">Contrato Gerado</h3>
+                </div>
+                <div class="card-body text-center">
+
+                    <button id="btnDownload" type="button" class="btn btn-primary mt-3" style="width: 200px;">
+                        Download do Contrato
+                    </button>
+
+                    <button type="button" class="btn btn-secondary mt-3" style="width: 200px;"
+                        onclick="window.location.href='index.html'">
+                        Voltar
+                    </button>
+
+                </div>
+            </div>
+
+            <!-- Right Side: Contract Preview -->
+            <div class="card col-12 col-lg-6 bg-waring scroll-card h-100 border-0 shadow-sm" style="overflow-y: auto;">
+                <div id="contratoParaDownload" style="background-color: white; padding: 20px; min-height: 100%;">
+                    <p class="text-center text-muted">Carregando contrato...</p>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-light text-center py-2 border-top" style="flex: 0 0 auto;">
+        <p class="mb-0 small text-muted">&copy; <span id="currentYear"></span> Contratos Online. Todos os direitos
+            reservados.</p>
+    </footer>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById('currentYear').textContent = new Date().getFullYear();
+            const parametrosUrl = new URLSearchParams(window.location.search)
+            const externalReference = parametrosUrl.get('external_reference');
+            const paymentId = parametrosUrl.get('payment_id');
+            const status = parametrosUrl.get('status');
+
+            if (externalReference) {
+                // Se temos o ID, tentamos atualizar/buscar no backend
+                if (document.getElementById('statusMessage')) document.getElementById('statusMessage').innerHTML = '<p>Verificando pagamento...</p>';
+                atualizarContrato(externalReference, paymentId, status)
+            } else {
+                // Sem ID na URL (cenário de produção/limpo)
+                console.warn('Id de referência não encontrado na URL.');
+                recuperarContrato();
+            }
+
+            document.getElementById('btnDownload').addEventListener('click', baixarPDF);
+        });
+
+        async function recuperarContrato(conteudoBackend = null) {
+            const contratoSalvo = localStorage.getItem('contratoPreenchido');
+
+            if (conteudoBackend) {
+                document.getElementById('contratoParaDownload').innerHTML = conteudoBackend;
+            } else if (contratoSalvo) {
+                document.getElementById('contratoParaDownload').innerHTML = contratoSalvo;
+            } else {
+                document.getElementById('contratoParaDownload').innerHTML = '<p class="text-center text-muted">Contrato não encontrado. Se você acabou de pagar, aguarde o email.</p>';
+                document.getElementById('btnDownload').style.display = 'none';
+            }
+        }
+
+        function baixarPDF() {
+            const elementoContrato = document.getElementById('contratoParaDownload');
+
+            const opcoes = {
+                margin: [20, 20, 18, 20],
+                filename: 'contrato.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: true, scrollX: 0, scrollY: 0, windowWidth: document.documentElement.scrollWidth },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Adiciona um pequeno delay para garantir que o conteúdo esteja carregado antes de gerar o PDF
+            setTimeout(() => {
+                html2pdf().from(elementoContrato).set(opcoes).save().then(() => {
+                    // Remove o contrato salvo do localStorage após o download
+                    localStorage.removeItem('contratoPreenchido');
+                    // Opcional: Manter na tela ou limpar
+                });
+            }, 500);
+        }
+
+        async function atualizarContrato(idReferencia, idPagamento, status) {
+            const dados = { id: idReferencia, status, idPagamento }
+
+            try {
+                const response = await fetch('/atualizar', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dados)
+                });
+
+                const data = await response.json();
+
+                if (data.id) {
+                    console.log('ID CONTRATO ATUALIZADO: ', data.id);
+                    // Se o backend retornar o conteúdo atualizado, usamos ele
+                    if (data.conteudoContrato) {
+                        let content = data.conteudoContrato;
+                        try {
+                            if (typeof content === 'string' && (content.startsWith('"') || content.startsWith('{'))) {
+                                content = JSON.parse(content);
+                            }
+                        } catch (e) { console.warn('Falha no parse do conteudo:', e); }
+
+                        recuperarContrato(content);
+                    } else {
+                        recuperarContrato();
+                    }
+                } else {
+                    console.log('CONTRATO ATUALIZADO: ', data)
+                    recuperarContrato();
+                }
+            } catch (error) {
+                console.error("Erro ao gerar pagamento:", error);
+                recuperarContrato();
+            }
+        }
+    </script>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</body>
+
+</html>

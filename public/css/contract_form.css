@@ -1,0 +1,252 @@
+/* Custom Compact for Contract Pages */
+
+/* Compact Header */
+header.bg-primary {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    min-height: 4.5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+}
+
+header h1 {
+    font-size: 1.25rem !important;
+}
+
+header p {
+    font-size: 0.85rem !important;
+    margin-top: 2px !important;
+}
+
+/* Compact Footer */
+footer {
+    padding-top: 0.5rem !important;
+    padding-bottom: 0.5rem !important;
+    margin-top: 0.5rem !important;
+    min-height: 4.5rem !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+    background: linear-gradient(to right, #334155, #1e293b) !important;
+    /*color: white !important;**/
+}
+
+footer p,
+footer .text-muted {
+    font-size: 1.0rem !important;
+    margin-top: 2px !important;
+    color: #eef2f5 !important;
+}
+
+/* Compact Card */
+.card-header {
+    padding: 0.75rem 1rem !important;
+}
+
+.card-header h3,
+.card-header h4 {
+    font-size: 1.25rem !important;
+    /* Decreased font size */
+}
+
+.card-body {
+    padding: 0.5rem !important;
+}
+
+/* Compact Forms */
+.form-group {
+    margin-bottom: 0.25rem !important;
+    gap: 0.25rem !important;
+}
+
+.form-group label {
+    margin-bottom: 0 !important;
+    font-size: 0.85rem !important;
+}
+
+.form-control {
+    height: calc(1.8rem + 2px) !important;
+    padding: 0.25rem 0.5rem !important;
+    font-size: 0.9rem !important;
+}
+
+textarea.form-control {
+    height: 275px !important;
+}
+
+/* Fix CEP Button Height & Alignment */
+.input-group {
+    display: flex !important;
+    align-items: stretch !important;
+    height: calc(1.8rem + 2px) !important;
+    flex-wrap: nowrap !important;
+    margin-bottom: 0 !important;
+}
+
+.input-group .form-control {
+    height: 100% !important;
+    margin-bottom: 0 !important;
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+}
+
+.input-group-append {
+    display: flex !important;
+    height: 100% !important;
+    margin-left: -1px !important;
+}
+
+.input-group-append .btn,
+.input-group .btn {
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 15px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-size: 0.75rem !important;
+    margin: 0 !important;
+    border-top-left-radius: 0 !important;
+    border-bottom-left-radius: 0 !important;
+    line-height: normal !important;
+}
+
+/* Scroll Card */
+.scroll-card {
+    height: 100% !important;
+    overflow-y: auto;
+}
+
+/* Responsive Margin for Cards (Desktop Only) */
+@media (min-width: 992px) {
+    .scroll-card {
+        flex: 0 0 calc(50% - 10px) !important;
+        max-width: calc(50% - 10px) !important;
+        margin: 5px !important;
+    }
+}
+
+@media (max-width: 991.98px) {
+    .scroll-card {
+        margin-bottom: 10px !important;
+    }
+}
+
+/* Steps */
+.form-step h4 {
+    margin-bottom: 0.5rem !important;
+}
+
+/*.form-step .btn {
+    margin-top: 1rem !important;
+}*/
+
+/* Custom Scrollbar */
+.scroll-card::-webkit-scrollbar {
+    width: 6px;
+}
+
+.scroll-card::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scroll-card::-webkit-scrollbar-thumb {
+    background-color: #cbd5e1;
+    border-radius: 20px;
+    border: 3px solid transparent;
+    background-clip: content-box;
+}
+
+/*H4 Font Size */
+.h4,
+h4 {
+    font-size: 1.1rem !important;
+    padding-bottom: 0.4rem !important;
+}
+
+/* --- Loader and Toast Positioning Fix --- */
+
+/* Fix Toast Container Placement (Between Header and Footer visually) */
+#toast-container {
+    position: fixed !important;
+    top: 90px !important;
+    /* Push down to avoid covering Header */
+    left: 20px !important;
+    right: auto !important;
+    z-index: 10000 !important;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: calc(100vh - 180px);
+    /* Avoid overlapping Footer area */
+    overflow-y: auto;
+}
+
+/* Fix Global Spinner Overlay (Between Header and Footer) */
+#global-spinner-overlay {
+    position: fixed !important;
+    top: 85px !important;
+    /* Below Header */
+    bottom: 60px !important;
+    /* Above Footer (approx) */
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    /* Use top/bottom constraints */
+    background-color: rgba(255, 255, 255, 0.95) !important;
+    z-index: 9998 !important;
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    backdrop-filter: blur(2px);
+}
+
+#global-spinner-overlay.show {
+    display: flex !important;
+}
+
+/* Spinner Animation */
+.spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    border-left-color: var(--primary-color, #4f46e5);
+    animation: spin 1s ease infinite;
+    margin-bottom: 15px;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.loader-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.loading-text {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 5px;
+}
+
+.loading-subtext {
+    font-size: 0.85rem;
+    color: #666;
+}
